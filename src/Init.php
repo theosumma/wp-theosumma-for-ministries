@@ -40,7 +40,7 @@ class Init
 
 	private static function constants(): void
 	{
-		$plugin_init_file = dirname(__FILE__, 2) . '/theosumma-for-ministries.php';
+		$plugin_init_file = dirname(__FILE__, 2) . '/wp-theosumma-for-ministries.php';
 
 		// Define static constants
 		define('TSFM_PLUGIN_FILE', $plugin_init_file);
