@@ -13,12 +13,10 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
-define('TSFM_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('TSFM_PLUGIN_URL', plugin_dir_url(__FILE__));
-//const THEOSUMMA_FRONTEND_URL = 'https://wp.theosumma.com/wp-chat-widget/';
-const THEOSUMMA_FRONTEND_URL = 'http://192.168.68.110:5173/wp-chat-widget/';
-//const THEOSUMMA_API_URL = 'https://mt-dev-api.theosumma.com/api/v1/wp';
-const THEOSUMMA_API_URL = 'http://192.168.68.110:8000/api/v1/wp';
+// Include Composer autoload if it exists
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+	require_once __DIR__ . '/vendor/autoload.php';
+}
 
 // Autoload classes following the TSFM namespace
 spl_autoload_register(function ($class) {

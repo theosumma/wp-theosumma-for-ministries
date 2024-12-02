@@ -1,36 +1,60 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const modalContainer = document.getElementById('tsfm-modal-container');
-    const chatIframe = document.getElementById('ts-chat-widget-iframe');
-    const chatPlaceholder = document.getElementById('ts-chat-placeholder');
-    const createNewThreadButton = document.getElementById('tsfm-test-theosumma-new-chat');
-
-    let token = localStorage.getItem('tsfm_jwt_token');
-    let threadId = localStorage.getItem('tsfm_thread_id');
-    let threadCreatedAt = localStorage.getItem('tsfm_thread_created');
-
-    const isLoading = () => {
-        console.log('Loading...');
+/**
+ * Decodes a JWT token and checks if it has expired.
+ *
+ * @param {string} token - The JWT token to decode and check.
+ * @returns {object} An object containing the decoded payload and expiration status.
+ */
+function decodeAndCheckToken(token) {
+    if (!token) {
+        return {isValid: false, expired: true, payload: null, error: 'No token provided'};
     }
 
-    const failedLoading = (location = 0) => {
-        console.log('Failed to load chat!', location);
-    }
-
-    const isLoaded = (threadId) => {
-        if (!threadId) {
-            failedLoading();
-            return;
+    try {
+        // Split the token into its parts
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+            return {isValid: false, expired: true, payload: null, error: 'Invalid token format'};
         }
 
-        // Set iframe src to start loading
-        const url = `${tsfmData.theosummaFrontendUrl}threads/${threadId}`;
-        chatIframe.setAttribute('src', url);
-    };
+        // Decode the payload
+        const payloadBase64 = parts[1];
+        const payloadJson = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
+        const payload = JSON.parse(decodeURIComponent(escape(payloadJson)));
 
-    const isThreadOld = () => {
-        const sevenDaysAgo = Date.now() - 1000 * 60 * 60 * 24 * 7;
-        return new Date(threadCreatedAt) < new Date(sevenDaysAgo);
-    };
+        // Get the current time
+        const currentTime = Math.floor(Date.now() / 1000);
+
+        // Check if the token has expired
+        const expired = payload.exp ? currentTime >= payload.exp : false;
+
+        return {
+            isValid: true,
+            expired: expired,
+            payload: payload,
+            error: null,
+        };
+    } catch (error) {
+        console.error('Error decoding token:', error);
+        return {isValid: false, expired: true, payload: null, error: 'Error decoding token'};
+    }
+}
+
+
+document.addEventListener('DOMContentLoaded', async function () {
+    // ===============================================================
+    // ========================= define vars =========================
+    // ===============================================================
+    const chatIframe = document.getElementById('ts-chat-widget-iframe');
+    const createNewThreadButton = document.getElementById('tsfm-test-theosumma-new-chat');
+
+    let shouldOpenChat = false;
+
+    let token = localStorage.getItem('tsfmJwtToken');
+    let threadId = localStorage.getItem('tsfmThreadId');
+
+    // ===============================================================
+    // ===================== define inner functions ==================
+    // ===============================================================
 
     const createToken = async () => {
         try {
@@ -47,70 +71,14 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await response.json();
             if (data.success && data.token) {
                 // Store the JWT token in localStorage
-                localStorage.setItem('tsfm_jwt_token', data.token);
+                localStorage.setItem('tsfmJwtToken', data.token);
                 token = data.token;
-            } else {
-                alert('Failed to authenticate. Please try again.');
-                failedLoading(1);
             }
         } catch (error) {
-            failedLoading(2);
             console.error('Error:', error);
             alert('An error occurred while authenticating.');
         }
     }
-
-    if (
-        !token ||
-        !threadId ||
-        isThreadOld()
-    ) {
-        // Hide the chat iframe if there's no token, no thread ID, or the thread is older than 7 days
-        chatIframe.classList.add('hidden');
-        (async () => {
-            isLoading();
-            if (!token) {
-                await createToken()
-            }
-
-            if (
-                token &&
-                (
-                    !threadId ||
-                    isThreadOld()
-                )
-            ) {
-                await createThread();
-            }
-
-            if (threadId && token) {
-                isLoaded(threadId);
-            } else {
-                failedLoading(3);
-            }
-        })();
-    } else if (
-        token &&
-        threadId &&
-        !isThreadOld()
-    ) {
-        // Hide the chat placeholder if token and thread ID exist and the thread is not old
-        chatPlaceholder.classList.add('hidden');
-        isLoaded(threadId)
-    }
-
-    // Set up the onload listener once
-    chatIframe.addEventListener('load', () => {
-        console.log('Iframe loaded with src:', chatIframe.src);
-        if (token) {
-            // Verify that the src is the chat URL
-            const expectedSrc = `${tsfmData.theosummaFrontendUrl}threads/`;
-            if (chatIframe.src.startsWith(expectedSrc)) {
-                chatIframe.contentWindow.postMessage({token: token}, tsfmData.theosummaFrontendUrl);
-                console.log('Chat iframe loaded and message sent!');
-            }
-        }
-    });
 
     const createThread = async () => {
         try {
@@ -127,37 +95,71 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             const data = await response.json();
             const thread = JSON.parse(data?.thread_data);
-            if (data.success && thread && thread.thread_id && thread.created_at) {
+            if (data.success && thread && thread.thread_id) {
                 // Store the data
-                localStorage.setItem('tsfm_thread_id', thread.thread_id);
-                localStorage.setItem('tsfm_thread_created', thread.created_at);
+                localStorage.setItem('tsfmThreadId', thread.thread_id);
                 threadId = thread.thread_id;
-                threadCreatedAt = thread.created_at;
             } else {
-                alert('Failed to create thread. Please try again.');
-                failedLoading(4);
+                throw new Error('Failed to create thread');
             }
         } catch (error) {
-            failedLoading(5);
             console.error('Error:', error);
             alert('An error occurred while creating thread.');
         }
     }
 
-    createNewThreadButton.addEventListener('click', async function () {
-        createNewThreadButton.disabled = true;
-        createNewThreadButton.textContent = 'Creating thread...';
-        isLoading();
-        if (!token) {
+    const setIframeSrc = (localThreadId = '') => {
+        let finalThreadId = localThreadId || threadId;
+        if (!finalThreadId) {
+            return;
+        }
+        console.log('Chat loaded!');
+        // Set iframe src to start loading
+        chatIframe.setAttribute(
+            'src',
+            `${tsfmData.theosummaFrontendUrl}threads/${finalThreadId}?token=${token}`
+        );
+    };
+
+    // ===============================================================
+    // =========================== execute ===========================
+    // ===============================================================
+
+    if (!token) {
+        await createToken();
+    } else {
+        const decryptedToken = decodeAndCheckToken(token);
+        if (decryptedToken.expired) {
             await createToken();
         }
+    }
 
-        if (token) await createThread();
+    if (token && !threadId) {
+        await createThread();
+    }
 
+    if (token && threadId) {
+        setIframeSrc(threadId);
+    }
+
+
+    // ===============================================================
+    // ========================== listeners ==========================
+    // ===============================================================
+
+    createNewThreadButton.addEventListener('click', async function () {
+        createNewThreadButton.disabled = true;
+        createNewThreadButton.textContent = 'Creating new chat...';
+        const decryptedToken = decodeAndCheckToken(token);
+        if (decryptedToken.expired) {
+            await createToken();
+            if (!token) {
+                return;
+            }
+        }
+        await createThread();
         if (threadId && token) {
-            isLoaded(threadId);
-        } else {
-            failedLoading(3);
+            setIframeSrc(threadId);
         }
         createNewThreadButton.disabled = false;
         createNewThreadButton.textContent = 'New Chat';

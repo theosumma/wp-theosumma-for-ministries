@@ -1,4 +1,50 @@
-document.addEventListener('DOMContentLoaded', function () {
+/**
+ * Decodes a JWT token and checks if it has expired.
+ *
+ * @param {string} token - The JWT token to decode and check.
+ * @returns {object} An object containing the decoded payload and expiration status.
+ */
+function decodeAndCheckToken(token) {
+    if (!token) {
+        return {isValid: false, expired: true, payload: null, error: 'No token provided'};
+    }
+
+    try {
+        // Split the token into its parts
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+            return {isValid: false, expired: true, payload: null, error: 'Invalid token format'};
+        }
+
+        // Decode the payload
+        const payloadBase64 = parts[1];
+        const payloadJson = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
+        const payload = JSON.parse(decodeURIComponent(escape(payloadJson)));
+
+        // Get the current time
+        const currentTime = Math.floor(Date.now() / 1000);
+
+        // Check if the token has expired
+        const expired = payload.exp ? currentTime >= payload.exp : false;
+
+        return {
+            isValid: true,
+            expired: expired,
+            payload: payload,
+            error: null,
+        };
+    } catch (error) {
+        console.error('Error decoding token:', error);
+        return {isValid: false, expired: true, payload: null, error: 'Error decoding token'};
+    }
+}
+
+
+document.addEventListener('DOMContentLoaded', async function () {
+    // ===============================================================
+    // ========================= define vars =========================
+    // ===============================================================
+    const chatButtonWrapper = document.getElementById('tsfm-chat-button');
     const openChatButton = document.getElementById('tsfm-open-chat');
     const closeChatButton = document.getElementById('tsfm-close-chat');
     const modalContainer = document.getElementById('tsfm-modal-container');
@@ -8,35 +54,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let shouldOpenChat = false;
 
-    let token = localStorage.getItem('tsfm_jwt_token');
-    let threadId = localStorage.getItem('tsfm_thread_id');
-    let threadCreatedAt = localStorage.getItem('tsfm_thread_created');
+    let token = localStorage.getItem('tsfmJwtToken');
+    let threadId = localStorage.getItem('tsfmThreadId');
 
-    // Helper: Generate a random ID
-    function generateRandomId() {
-        return 'anon_' + Math.random().toString(36).substr(2, 10);
-    }
-
-// Helper: Fetch user IP (simple external example)
-    async function getUserIP() {
-        const res = await fetch('https://api.ipify.org?format=json');
-        const { ip } = await res.json();
-        return ip;
-    }
-
-    const isLoading = () => {
-        console.log('Loading...');
-        // Disable the button to prevent multiple clicks
-        openChatButton.disabled = true;
-        // Add loading animation to the image
-        chatImage.classList.add('loading-icon');
-    }
-
-    const failedLoading = (location = 0) => {
-        console.log('Failed to load chat!', location);
-        openChatButton.disabled = false;
-        chatImage.classList.remove('loading-icon');
-    }
+    // ===============================================================
+    // ===================== define inner functions ==================
+    // ===============================================================
 
     const openChatWindow = () => {
         modalContainer.classList.remove('hidden');
@@ -61,19 +84,28 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 1000);
     }
 
-    // Set up the onload listener once
-    chatIframe.addEventListener('load', () => {
-        console.log('Iframe loaded with src:', chatIframe.src);
-        if (shouldOpenChat && token) {
-            // Verify that the src is the chat URL
-            const expectedSrc = `${tsfmData.theosummaFrontendUrl}threads/`;
-            if (chatIframe.src.startsWith(expectedSrc)) {
-                chatIframe.contentWindow.postMessage({ token: token }, tsfmData.theosummaFrontendUrl);
-                console.log('Chat iframe loaded and message sent!');
-                openChatWindow();
+    const createToken = async () => {
+        try {
+            // Send POST request to Auth endpoint with nonce to get a new token
+            const response = await fetch(tsfmData.authEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': tsfmData.nonce,
+                },
+                body: JSON.stringify({}),
+            });
+            const data = await response.json();
+            if (data.success && data.token) {
+                // Store the JWT token in localStorage
+                localStorage.setItem('tsfmJwtToken', data.token);
+                token = data.token;
             }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while authenticating.');
         }
-    });
+    }
 
     const createThread = async () => {
         try {
@@ -89,82 +121,90 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             const data = await response.json();
             const thread = JSON.parse(data?.thread_data);
-            if (data.success && thread && thread.thread_id && thread.created_at) {
+            if (data.success && thread && thread.thread_id) {
                 // Store the data
-                localStorage.setItem('tsfm_thread_id', thread.thread_id);
-                localStorage.setItem('tsfm_thread_created', thread.created_at);
+                localStorage.setItem('tsfmThreadId', thread.thread_id);
                 threadId = thread.thread_id;
-                threadCreatedAt = thread.created_at;
             } else {
-                alert('Failed to create thread. Please try again.');
-                failedLoading(4);
+                throw new Error('Failed to create thread');
             }
         } catch (error) {
-            failedLoading(5);
             console.error('Error:', error);
             alert('An error occurred while creating thread.');
         }
     }
 
-    openChatButton.addEventListener('click', async function () {
-        isLoading();
-        if (!token) {
-            try {
-                // Send POST request to Auth endpoint with nonce to get a new token
-                const response = await fetch(tsfmData.authEndpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-WP-Nonce': tsfmData.nonce,
-                    },
-                    body: JSON.stringify({}),
-                });
-                const data = await response.json();
-                if (data.success && data.token) {
-                    // Store the JWT token in localStorage
-                    localStorage.setItem('tsfm_jwt_token', data.token);
-                    token = data.token;
-                } else {
-                    alert('Failed to authenticate. Please try again.');
-                    failedLoading(1);
-                    return;
-                }
-            } catch (error) {
-                failedLoading(2);
-                console.error('Error:', error);
-                alert('An error occurred while authenticating.');
-                return;
-            }
-        }
-
-        if (
-            !threadId || // 1. If there's no thread ID, it enters the block.
-            (threadId && new Date(threadCreatedAt) < new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)) // 2. If there is a thread ID but it's older than 7 days, it also enters the block.
-        ) {
-            await createThread();
-        }
-
-        if (threadId && token) {
-            shouldOpenChat = true; // Set the flag to open chat on iframe load
-            isLoaded(threadId, token);
-        } else {
-            failedLoading(3);
-        }
-    });
-
-    const isLoaded = (threadId) => {
-        if (!threadId) {
-            failedLoading();
+    const setIframeSrc = (localThreadId = '') => {
+        let finalThreadId = localThreadId || threadId;
+        if (!finalThreadId) {
             return;
         }
         console.log('Chat loaded!');
-        openChatButton.disabled = false;
-        chatImage.classList.remove('loading-icon');
-
         // Set iframe src to start loading
-        const url = `${tsfmData.theosummaFrontendUrl}threads/${threadId}`;
-        chatIframe.setAttribute('src', url);
+        chatIframe.setAttribute(
+            'src',
+            `${tsfmData.theosummaFrontendUrl}threads/${finalThreadId}?token=${token}`
+        );
     };
+
+    // ===============================================================
+    // =========================== execute ===========================
+    // ===============================================================
+
+    if (!token) {
+        await createToken();
+        if (token) {
+            chatButtonWrapper.style.display = 'block';
+        } else {
+            return;
+        }
+    } else {
+        const decryptedToken = decodeAndCheckToken(token);
+        if (decryptedToken.expired) {
+            await createToken();
+            if (token) {
+                chatButtonWrapper.style.display = 'block';
+            } else {
+                return;
+            }
+        } else {
+            chatButtonWrapper.style.display = 'block';
+        }
+    }
+
+
+    // ===============================================================
+    // ========================== listeners ==========================
+    // ===============================================================
+
+    openChatButton.addEventListener('click', async function () {
+        const decryptedToken = decodeAndCheckToken(token);
+        if (decryptedToken.expired) {
+            await createToken();
+            if (!token) {
+                return;
+            }
+        }
+        openChatWindow();
+        if (!threadId) {
+            await createThread();
+        }
+
+        if (threadId) {
+            setIframeSrc(threadId, token);
+        }
+    });
+
+    // // Set up the onload listener once
+    // chatIframe.addEventListener('load', () => {
+    //     if (shouldOpenChat && token) {
+    //         // Verify that the src is the chat URL
+    //         const expectedSrc = `${tsfmData.theosummaFrontendUrl}threads/`;
+    //         if (chatIframe.src.startsWith(expectedSrc)) {
+    //             openChatWindow();
+    //         }
+    //     }
+    // });
 
     closeChatButton.addEventListener('click', function () {
         closeChatWindow();
@@ -173,9 +213,16 @@ document.addEventListener('DOMContentLoaded', function () {
     createNewThreadButton.addEventListener('click', async function () {
         createNewThreadButton.disabled = true;
         createNewThreadButton.textContent = 'Creating new chat...';
+        const decryptedToken = decodeAndCheckToken(token);
+        if (decryptedToken.expired) {
+            await createToken();
+            if (!token) {
+                return;
+            }
+        }
         await createThread();
         if (threadId && token) {
-            isLoaded(threadId, token);
+            setIframeSrc(threadId);
         }
         createNewThreadButton.disabled = false;
         createNewThreadButton.textContent = 'New Chat';

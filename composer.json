@@ -1,0 +1,12 @@
+{
+    "name": "theosumma/wp-plugin",
+    "description": "TheoSumma For Ministries WordPress Plugin",
+    "require": {
+        "firebase/php-jwt": "^6.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "TSFM\\": "src/"
+        }
+    }
+}

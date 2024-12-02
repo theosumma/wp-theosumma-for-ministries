@@ -2,7 +2,8 @@
 
 namespace TSFM;
 
-use TSFM\RESTApi\Setup;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 if (!defined('ABSPATH')) {
 	exit('You are not allowed to get here.');
@@ -11,7 +12,7 @@ if (!defined('ABSPATH')) {
 class TokenManager
 {
 	/**
-	 * Fetch a JWT token from an external service.
+	 * Fetch a JWT token from the external service.
 	 *
 	 * @return string|null The JWT token if the request was successful, or null on failure.
 	 */
@@ -24,69 +25,75 @@ class TokenManager
 			return null;
 		}
 
-		// Prepare the request body
-		$body = [
-			'api_key' => $api_key,
-			'sub' => self::get_sub_info(),
-		];
+		$jwt_token = self::create_jwt_token($api_key);
 
-		$endpoint = Setup::endpoint('token');
-		if (!$endpoint || empty($endpoint->url) || empty($endpoint->method)) {
-			error_log('TokenManager Error: Invalid endpoint.');
+		if (empty($jwt_token)) {
+			error_log('TokenManager Error: Failed to generate JWT token.');
 			return null;
 		}
 
-		// Send the POST request
-		$response = wp_remote_post($endpoint->url, [
-			'method' => $endpoint->method,
-			'headers' => [
-				'Content-Type' => 'application/json',
-				Setup::API_KEY_HEADER => $api_key, // Include API key as header
-			],
-			'body' => json_encode($body),
-			'timeout' => 10,
-		]);
-
-		// Check for errors in the response
-		if (is_wp_error($response)) {
-			error_log('TokenManager Error: ' . $response->get_error_message());
-			return null;
-		}
-
-		// Decode the response body
-		$response_body = wp_remote_retrieve_body($response);
-		$data = json_decode($response_body, true);
-
-		// Check if the token exists in the response data
-		if (isset($data['jwt_token'])) {
-			return $data['jwt_token'];
-		}
-
-		// Log an error if the token was not received
-		error_log('TokenManager Error: JWT token not found in response.');
-		return null;
+		return $jwt_token;
 	}
 
 	/**
-	 * Get current user ID if user is authenticated, else generate anonymous UUID. there should be user_ or anonymous_ prefix in user_id.
+	 * Get current user ID if user is authenticated, else generate anonymous UUID.
+	 * The user_id will have a 'USER_' or 'ANONYMOUS_' prefix.
 	 *
-	 * @return array The sub info containing user_id and is_user flag.
+	 * @return array The sub info containing user_id and user_type.
 	 */
 	public static function get_sub_info(): array
 	{
 		$user_id = get_current_user_id();
 		$user_type = 'ANONYMOUS';
+
 		if ($user_id > 0) {
 			$user_type = 'USER';
 		} else {
 			$user_id = wp_generate_uuid4();
 		}
+
 		return [
 			'user_id' => $user_id,
 			'user_type' => $user_type,
 			'iss' => get_site_url(),
 			'iat' => time(),
-			'exp' => time() + (60 * 60 * 24 * 8), // Token valid for 1 hour TODO: to be changed once refresh token strategy is implemented
+			'exp' => time() + (60 * 60 * 24), // Token valid for 1 hour
 		];
+	}
+
+	/**
+	 * Create a JWT token using the provided API key.
+	 *
+	 * @param string $api_key The API key used to sign the JWT.
+	 *
+	 * @return string The generated JWT token, or an empty string on failure.
+	 */
+	public static function create_jwt_token(string $api_key): string
+	{
+		// Fetch user-specific info to include in the JWT payload
+		$sub_info = self::get_sub_info();
+
+		// Define the payload for the JWT
+		$payload = [
+			'sub' => json_encode([
+				'user_id' => $sub_info['user_id'],
+				'user_type' => $sub_info['user_type'],
+			]),
+			'iss' => $sub_info['iss'],     // Issuer (your site's URL)
+			'iat' => $sub_info['iat'],     // Issued At (current timestamp)
+			'exp' => $sub_info['exp'],     // Expiration time
+		];
+
+		// Generate the JWT using the API key as the signing key
+		try {
+			// Ensure you're using the correct version of firebase/php-jwt
+			// For versions >= 6.0, the second parameter should be a Key instance
+			$jwt_token = JWT::encode($payload, $api_key, 'HS256');
+		} catch (\Exception $e) {
+			error_log('TokenManager Error: Failed to generate JWT token. ' . $e->getMessage());
+			return '';
+		}
+
+		return $jwt_token;
 	}
 }

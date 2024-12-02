@@ -60,13 +60,13 @@ class ThreadManager
 
 		// thread_id and created_at
 		if (!empty($data['thread_id']) && !empty($data['created_at'])) {
-            return json_encode([
-                'thread_id' => $data['thread_id'],
-                'created_at' => $data['created_at'],
-            ]);
-        }
+			return json_encode([
+				'thread_id' => $data['thread_id'],
+				'created_at' => $data['created_at'],
+			]);
+		}
 
-        error_log('ThreadManager Error: Invalid response data.');
-        return null;
+		error_log('ThreadManager Error: Invalid response data.');
+		return null;
 	}
 }

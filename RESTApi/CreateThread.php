@@ -40,6 +40,7 @@ class CreateThread extends BaseAPI
             $this->send_error_response('Locale is required', 400);
             wp_die();
         }
+
 		$create_thread = ThreadManager::create_thread($locale);
 		if (empty($create_thread)){
 			$this->send_error_response('Failed to create thread', 500);
