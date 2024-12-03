@@ -4,6 +4,7 @@ namespace TSFM\Admin;
 
 use TSFM\Admin\Pages\BasePage;
 use TSFM\Admin\Pages\MainMenuPage;
+use TSFM\Admin\Pages\ManageApps;
 use TSFM\Admin\Pages\SettingsPage;
 use TSFM\Admin\Pages\TestTheosumma;
 
@@ -43,6 +44,7 @@ class AdminManager
 		$this->admin_pages[] = new MainMenuPage();
 		$this->admin_pages[] = new SettingsPage();
 		$this->admin_pages[] = new TestTheosumma();
+		$this->admin_pages[] = new ManageApps();
 
 		// Register menu pages
 		add_action('admin_menu', [$this, 'registerMenuPages']);

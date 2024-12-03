@@ -6,6 +6,8 @@ use TSFM\Admin\AdminManager;
 use TSFM\Frontend\FrontendManager;
 
 // Assuming you have a FrontendManager
+use TSFM\Models\App;
+use TSFM\Models\AppPost;
 use TSFM\RESTApi\Setup as RESTAPISetup;
 
 
@@ -76,5 +78,17 @@ class Init
 			self::$instance = new Init();
 		}
 		return self::$instance;
+	}
+
+	/**
+	 * Create database tables on plugin activation.
+	 *
+	 * @return void
+	 */
+	public static function activate(): void
+	{
+		// Create tables
+		App::create_table();
+		AppPost::create_table();
 	}
 }

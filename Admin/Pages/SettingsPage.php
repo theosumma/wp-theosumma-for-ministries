@@ -2,6 +2,7 @@
 
 namespace TSFM\Admin\Pages;
 
+use TSFM\Models\App;
 use TSFM\SettingsManager;
 
 if (!defined('ABSPATH')) {
@@ -41,6 +42,7 @@ class SettingsPage extends BasePage
 		register_setting('tsfm_options', SettingsManager::OPTION_TSFM_APP_ID);
 		register_setting('tsfm_options', SettingsManager::OPTION_TSFM_API_KEY);
 		register_setting('tsfm_options', SettingsManager::OPTION_DEVELOPMENT_MODE);
+		register_setting('tsfm_options', SettingsManager::CHAT_POPUP_APP_ID);
 
 		add_settings_section(
 			'tsfm_main_section',
@@ -50,13 +52,13 @@ class SettingsPage extends BasePage
 		);
 
 		// Add APP ID field
-        add_settings_field(
-            SettingsManager::OPTION_TSFM_APP_ID,
-            'APP ID',
-            [$this, 'renderAppIdField'],
-            'tsfm_settings',
-            'tsfm_main_section'
-        );
+		add_settings_field(
+			SettingsManager::OPTION_TSFM_APP_ID,
+			'APP ID',
+			[$this, 'renderAppIdField'],
+			'tsfm_settings',
+			'tsfm_main_section'
+		);
 
 		// Add API Key field
 		add_settings_field(
@@ -72,6 +74,14 @@ class SettingsPage extends BasePage
 			SettingsManager::OPTION_DEVELOPMENT_MODE,
 			'Development Mode',
 			[$this, 'renderDevelopmentModeField'],
+			'tsfm_settings',
+			'tsfm_main_section'
+		);
+		// Add Chat Popup App ID field
+		add_settings_field(
+			SettingsManager::CHAT_POPUP_APP_ID,
+			'Chat Popup App',
+			[$this, 'renderChatPopupAppIdField'],
 			'tsfm_settings',
 			'tsfm_main_section'
 		);
@@ -130,4 +140,29 @@ class SettingsPage extends BasePage
 		$checked = SettingsManager::isDevelopmentMode() ? 'checked' : '';
 		echo '<input type="checkbox" name="' . esc_attr(SettingsManager::OPTION_DEVELOPMENT_MODE) . '" value="1" ' . $checked . '> Enable Development Mode';
 	}
+    /**
+     * Render the Chat Popup App ID input field as select dropdown.
+     */
+    public function renderChatPopupAppIdField(): void
+    {
+        $app = App::get_all_apps();
+        if(empty($app)){
+            echo "<p>To use this functionality, you must create an application in Manage TheoSumma Apps page.</p>";
+	        return;
+        }
+
+	    $options = [
+		    '' => 'Select an App to activate this feature'
+	    ];
+        foreach ($app as $app_item) {
+            $options[$app_item->app_id] = $app_item->title;
+        }
+
+        $selected = esc_attr(SettingsManager::getChatPopupAppId());
+        echo '<select name="'.esc_attr(SettingsManager::CHAT_POPUP_APP_ID).'">';
+        foreach ($options as $key => $value) {
+            echo '<option value="'.esc_attr($key).'"'.selected($key, $selected, false).'>'.$value.'</option>';
+        }
+        echo '</select>';
+    }
 }

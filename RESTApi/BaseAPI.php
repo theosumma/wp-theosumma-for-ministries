@@ -33,6 +33,7 @@ abstract class BaseAPI
 	/**
 	 * Register REST API routes.
 	 * This method uses the endpoint name and arguments defined in the subclass.
+	 * @throws Exception
 	 */
 	public function register_routes(): void
 	{
@@ -69,6 +70,17 @@ abstract class BaseAPI
 	abstract protected function method(): string;
 
 	/**
+	 * Get any additional route arguments.
+	 * This method can be overridden by subclasses to provide additional arguments for the endpoint.
+	 *
+	 * @return array
+	 */
+	protected function custom_route_args(): array
+	{
+		return [];
+	}
+
+	/**
 	 * Execute the API endpoint.
 	 * This method is called by the WordPress REST API framework.
 	 *
@@ -96,7 +108,7 @@ abstract class BaseAPI
 
 
 		$default_args = [
-			'methods' => $this->method(), // Default to POST
+			'methods' => $this->method(),
 			'callback' => [$this, 'execute'], // Default to the execute method
 			'permission_callback' => [$this, 'default_permission_callback'], // Default permission callback
 			'args' => [], // Placeholder for additional arguments
@@ -105,19 +117,6 @@ abstract class BaseAPI
 		// Merge with any custom arguments from the subclass
 		return array_merge($default_args, $this->custom_route_args());
 	}
-
-	/**
-	 * Get any custom route arguments.
-	 * Each subclass can override this method to provide additional arguments for the endpoint.
-	 *
-	 * @return array
-	 * */
-
-	protected function custom_route_args(): array
-	{
-		return [];
-	}
-
 
 	/**
 	 * Default permission callback.
@@ -139,6 +138,10 @@ abstract class BaseAPI
 			return false;
 		}
 
+		if (!current_user_can('manage_options')) {
+			return false;
+		}
+
 		return true;
 	}
 
@@ -157,3 +160,8 @@ abstract class BaseAPI
 		], $status);
 	}
 }
+
+
+
+
+

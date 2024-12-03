@@ -3,6 +3,9 @@
 
 namespace TSFM\RESTApi;
 
+use TSFM\RESTApi\App\Create as CreateApp;
+use TSFM\RESTApi\App\Delete as DeleteApp;
+
 if (!defined('ABSPATH')) {
 	exit('You are not allowed to get here.');
 }
@@ -12,7 +15,7 @@ class Setup
 	// ipconfig getifaddr en0
 	const API_KEY_HEADER = 'X-API-Key';
 
-	const API_ENDPOINTS = [
+	const TS_API_ENDPOINTS = [
 		'token' => [
 			'method' => 'POST',
 			'path' => '/tenant-token',
@@ -20,6 +23,14 @@ class Setup
 		'create_thread' => [
 			'method' => 'POST',
 			'path' => '/{workflow_id}/threads/{locale}',
+		],
+		'check_app_exists' => [
+			'method' => 'GET',
+			'path' => '/apps/{app_id}',
+		],
+		'create_app' => [
+			'method' => 'POST',
+			'path' => '/apps/{app_id}',
 		]
 	];
 
@@ -31,8 +42,11 @@ class Setup
 		// List all REST API classes here
 		$apis = [
 			Auth::class,
-			CreateThread::class
-			// Add other REST API classes here, e.g., Books::class
+			CreateThread::class,
+
+			// App CRUD Endpoints
+			CreateApp::class,
+			DeleteApp::class,
 		];
 
 		foreach ($apis as $api_class) {
@@ -52,12 +66,12 @@ class Setup
 	 */
 	public static function endpoint(string $endpoint_name, array $params = []): ?object
 	{
-		if (!isset(self::API_ENDPOINTS[$endpoint_name])) {
+		if (!isset(self::TS_API_ENDPOINTS[$endpoint_name])) {
 			return null;
 		}
 
 		// Get the path from the endpoint configuration
-		$path = self::API_ENDPOINTS[$endpoint_name]['path'];
+		$path = self::TS_API_ENDPOINTS[$endpoint_name]['path'];
 
 		// Replace placeholders in the path with values from $params
 		foreach ($params as $key => $value) {
@@ -69,7 +83,7 @@ class Setup
 
 		return (object) [
 			'url'    => $full_url,
-			'method' => self::API_ENDPOINTS[$endpoint_name]['method'],
+			'method' => self::TS_API_ENDPOINTS[$endpoint_name]['method'],
 			'path'   => $path,
 		];
 	}

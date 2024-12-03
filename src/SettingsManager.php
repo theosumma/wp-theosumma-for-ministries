@@ -11,6 +11,7 @@ class SettingsManager
 	const OPTION_TSFM_APP_ID = 'tsfm_app_id';
 	const OPTION_TSFM_API_KEY = 'tsfm_api_key';
 	const OPTION_DEVELOPMENT_MODE = 'tsfm_development_mode';
+	const CHAT_POPUP_APP_ID = 'tsfm_chat_popup_app_id';
 
 	/**
 	 * Retrieve the APP ID option value.
@@ -41,32 +42,12 @@ class SettingsManager
 	}
 
 	/**
-	 * Update the APP ID option value.
-	 */
-	public static function updateAppId(string $value): bool
-	{
-		return update_option(self::OPTION_TSFM_APP_ID, sanitize_text_field($value));
-	}
-
-	/**
-	 * Update the API key option value.
+	 * Retrieve the Chat Popup App ID option value
 	 *
-	 * @param string $value
-	 * @return bool
+	 * @return string|null
 	 */
-	public static function updateApiKey(string $value): bool
+	public static function getChatPopupAppId(): ?string
 	{
-		return update_option(self::OPTION_TSFM_API_KEY, sanitize_text_field($value));
-	}
-
-	/**
-	 * Update the Development Mode option value.
-	 *
-	 * @param bool $value
-	 * @return bool
-	 */
-	public static function updateDevelopmentMode(bool $value): bool
-	{
-		return update_option(self::OPTION_DEVELOPMENT_MODE, $value ? 1 : 0);
+		return get_option(self::CHAT_POPUP_APP_ID);
 	}
 }

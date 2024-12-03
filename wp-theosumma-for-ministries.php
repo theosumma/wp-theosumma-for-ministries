@@ -44,6 +44,7 @@ spl_autoload_register(function ($class) {
 	}
 });
 
-
 // Initialize the plugin
 \TSFM\Init::get_instance();
+register_activation_hook(__FILE__, [\TSFM\Init::class, 'activate']);
+
