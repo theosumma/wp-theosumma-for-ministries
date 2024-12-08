@@ -5,6 +5,11 @@ namespace TSFM\RESTApi;
 
 use TSFM\RESTApi\App\Create as CreateApp;
 use TSFM\RESTApi\App\Delete as DeleteApp;
+use TSFM\RESTApi\App\GetAppPosts;
+use TSFM\RESTApi\App\GetRealtedPostTypes;
+use TSFM\RESTApi\App\GetSyncingStatus;
+use TSFM\RESTApi\App\Read as ReadApp;
+use TSFM\RESTApi\App\SyncAppPosts;
 
 if (!defined('ABSPATH')) {
 	exit('You are not allowed to get here.');
@@ -22,7 +27,7 @@ class Setup
 		],
 		'create_thread' => [
 			'method' => 'POST',
-			'path' => '/{workflow_id}/threads/{locale}',
+			'path' => '/{workflow_id}/threads',
 		],
 		'check_app_exists' => [
 			'method' => 'GET',
@@ -47,6 +52,11 @@ class Setup
 			// App CRUD Endpoints
 			CreateApp::class,
 			DeleteApp::class,
+			ReadApp::class,
+			GetRealtedPostTypes::class,
+			GetAppPosts::class,
+			SyncAppPosts::class,
+			GetSyncingStatus::class,
 		];
 
 		foreach ($apis as $api_class) {

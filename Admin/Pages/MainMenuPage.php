@@ -47,7 +47,7 @@ class MainMenuPage extends BasePage
 	 */
 	public function render(): void
 	{
-		$settings_url = admin_url('admin.php?page=tsfm_settings');
+		$settings_url = admin_url('admin.php?page=tsfm_manage_apps');
 		if (function_exists('wp_redirect')) {
 			wp_redirect($settings_url);
 			exit;

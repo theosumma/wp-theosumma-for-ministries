@@ -145,8 +145,8 @@ class SettingsPage extends BasePage
      */
     public function renderChatPopupAppIdField(): void
     {
-        $app = App::get_all_apps();
-        if(empty($app)){
+        $apps = App::get_all_apps();
+        if(empty($apps)){
             echo "<p>To use this functionality, you must create an application in Manage TheoSumma Apps page.</p>";
 	        return;
         }
@@ -154,7 +154,7 @@ class SettingsPage extends BasePage
 	    $options = [
 		    '' => 'Select an App to activate this feature'
 	    ];
-        foreach ($app as $app_item) {
+        foreach ($apps as $app_item) {
             $options[$app_item->app_id] = $app_item->title;
         }
 

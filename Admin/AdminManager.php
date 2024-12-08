@@ -6,7 +6,6 @@ use TSFM\Admin\Pages\BasePage;
 use TSFM\Admin\Pages\MainMenuPage;
 use TSFM\Admin\Pages\ManageApps;
 use TSFM\Admin\Pages\SettingsPage;
-use TSFM\Admin\Pages\TestTheosumma;
 
 if (!defined('ABSPATH')) {
 	exit('You are not allowed to get here.');
@@ -42,9 +41,8 @@ class AdminManager
 	{
 		// Instantiate admin pages
 		$this->admin_pages[] = new MainMenuPage();
-		$this->admin_pages[] = new SettingsPage();
-		$this->admin_pages[] = new TestTheosumma();
 		$this->admin_pages[] = new ManageApps();
+		$this->admin_pages[] = new SettingsPage();
 
 		// Register menu pages
 		add_action('admin_menu', [$this, 'registerMenuPages']);

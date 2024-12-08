@@ -2,7 +2,9 @@
 
 namespace TSFM\RESTApi;
 
+use TSFM\Models\App;
 use TSFM\ThreadManager;
+use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -35,16 +37,34 @@ class CreateThread extends BaseAPI
 	public function execute(WP_REST_Request $request): WP_REST_Response
 	{
 		// validate if locale is provided
+		$app_id = $request->get_param('app_id');
 		$locale = $request->get_param('locale');
-		if (empty($locale)) {
-            $this->send_error_response('Locale is required', 400);
-            wp_die();
-        }
+		$post_id = $request->get_param('post_id');
 
-		$create_thread = ThreadManager::create_thread($locale);
-		if (empty($create_thread)){
-			$this->send_error_response('Failed to create thread', 500);
-			wp_die();
+		if (empty($app_id)) {
+			return $this->send_error_response('App ID is required');
+		}
+
+		if (empty($locale)) {
+			return $this->send_error_response('Locale is required');
+		}
+
+		$app = App::get_app_by_id($app_id);
+		if (!$app) {
+			return $this->send_error_response('App not found');
+		}
+
+		if ($app->has_posts && empty($post_id)) {
+			return $this->send_error_response('Post ID is required when app has posts enabled');
+		}
+
+		if (!$app->has_posts) {
+			$post_id = 0;
+		}
+
+		$create_thread = ThreadManager::create_thread(app_id: $app_id, locale: $locale, post_id: $post_id);
+		if ($create_thread instanceof WP_Error) {
+			return $this->send_error_response($create_thread->get_error_message(), $create_thread->get_error_code(), $create_thread->get_error_data());
 		}
 
 		return new WP_REST_Response([
