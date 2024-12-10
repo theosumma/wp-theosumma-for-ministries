@@ -125,5 +125,10 @@ class GetSyncingStatus extends BaseAPI
 		return $count_posts->publish ?? 0;
 	}
 
+	protected function is_admin_route(): bool
+	{
+		return true;
+	}
+
 
 }

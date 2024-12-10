@@ -6,6 +6,7 @@ use TSFM\Admin\AdminManager;
 use TSFM\Frontend\FrontendManager;
 
 // Assuming you have a FrontendManager
+use TSFM\Frontend\Shortcode;
 use TSFM\Models\App;
 use TSFM\Models\AppPost;
 use TSFM\RESTApi\Setup as RESTAPISetup;
@@ -24,7 +25,7 @@ class Init
 		$lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		foreach ($lines as $line) {
 			// Ignore lines that are comments
-			if (strpos(trim($line), '#') === 0) {
+			if (str_starts_with(trim($line), '#')) {
 				continue;
 			}
 
@@ -70,6 +71,7 @@ class Init
 		RESTAPISetup::load(); // Load REST API functionalities
 		AdminManager::load(); // Load admin functionalities
 		FrontendManager::load(); // Load frontend functionalities
+		Shortcode::load_shortcodes(); // Load shortcodes
 	}
 
 	public static function get_instance(): ?Init

@@ -112,13 +112,13 @@ class AppPost
 		// Generate the SQL for bulk insert or update
 		// TODO: check whether you want to update the existing records as well
 		$sql = "
-        INSERT INTO $table_name (app_id, post_id, post_type, is_synced, created_at, updated_at)
-        VALUES " . implode(', ', $placeholders) . "
-        ON DUPLICATE KEY UPDATE
-        post_type = VALUES(post_type),
-        is_synced = VALUES(is_synced),
-        updated_at = VALUES(updated_at)
-    ";
+	        INSERT INTO $table_name (app_id, post_id, post_type, is_synced, created_at, updated_at)
+	        VALUES " . implode(', ', $placeholders) . "
+	        ON DUPLICATE KEY UPDATE
+	        post_type = VALUES(post_type),
+	        is_synced = VALUES(is_synced),
+	        updated_at = VALUES(updated_at)
+	    ";
 
 		// Execute the query
 		$wpdb->query($wpdb->prepare($sql, $values));

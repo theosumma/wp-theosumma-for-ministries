@@ -70,6 +70,14 @@ abstract class BaseAPI
 	abstract protected function method(): string;
 
 	/**
+     * Check if the current request is for an admin route.
+     *
+     * @return bool
+     */
+	abstract protected function is_admin_route(): bool;
+
+
+	/**
 	 * Get any additional route arguments.
 	 * This method can be overridden by subclasses to provide additional arguments for the endpoint.
 	 *
@@ -138,7 +146,7 @@ abstract class BaseAPI
 			return false;
 		}
 
-		if (!current_user_can('manage_options')) {
+		if (!current_user_can('manage_options') && $this->is_admin_route()) {
 			return false;
 		}
 

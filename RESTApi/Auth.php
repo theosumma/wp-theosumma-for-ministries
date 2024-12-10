@@ -47,4 +47,8 @@ class Auth extends BaseAPI
 		], 200);
 	}
 
+	protected function is_admin_route(): bool
+	{
+		return false;
+	}
 }

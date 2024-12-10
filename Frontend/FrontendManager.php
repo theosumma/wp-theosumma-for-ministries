@@ -10,9 +10,11 @@ if (!defined('ABSPATH')) {
 
 class FrontendManager
 {
+    public static string $getChatPopupAppId = '';
 	public static function load(): void
 	{
-		if (is_admin() || (defined('DOING_AJAX') && DOING_AJAX) || SettingsManager::isDevelopmentMode()) {
+        self::$getChatPopupAppId = SettingsManager::getChatPopupAppId();
+		if (is_admin() || (defined('DOING_AJAX') && DOING_AJAX) || SettingsManager::isDevelopmentMode() || empty(self::$getChatPopupAppId)) {
 			return; // if admin dashboard or AJAX
 		}
 		add_action('wp_enqueue_scripts', [self::class, 'enqueue_scripts']); // Frontend scripts

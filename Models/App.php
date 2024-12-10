@@ -97,10 +97,21 @@ class App
 	{
 		global $wpdb;
 		$table_name = self::get_table_name();
-		return $wpdb->get_row($wpdb->prepare(
+
+		$app = $wpdb->get_row($wpdb->prepare(
 			"SELECT * FROM $table_name WHERE ID = %d",
 			$id
 		));
+
+		if (!$app) {
+			return null;
+		}
+
+		$app->ID = (int)$app->ID;
+		$app->accept_welcome_message = (bool)$app->accept_welcome_message;
+		$app->accept_documents = (bool)$app->accept_documents;
+		$app->has_posts = (bool)$app->has_posts;
+		return $app;
 	}
 
 	/**
@@ -118,12 +129,12 @@ class App
 			$app_id
 		));
 		if (!$app) {
-            return null;
-        }
-		$app->ID = (int) $app->ID;
-		$app->accept_welcome_message = (bool) $app->accept_welcome_message;
-		$app->accept_documents = (bool) $app->accept_documents;
-		$app->has_posts = (bool) $app->has_posts;
+			return null;
+		}
+		$app->ID = (int)$app->ID;
+		$app->accept_welcome_message = (bool)$app->accept_welcome_message;
+		$app->accept_documents = (bool)$app->accept_documents;
+		$app->has_posts = (bool)$app->has_posts;
 
 		return $app;
 	}
