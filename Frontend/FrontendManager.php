@@ -34,6 +34,7 @@ class FrontendManager
 			'authEndpoint' => rest_url('tsfm/v1/auth'),
 			'threadEndpoint' => rest_url('tsfm/v1/threads'),
 			'theosummaFrontendUrl' => THEOSUMMA_FRONTEND_URL,
+            'popUpAppId' => SettingsManager::getChatPopupAppId(),
 		]);
 	}
 

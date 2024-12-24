@@ -107,7 +107,10 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
+    let isCreatingThread = false;
     const createThread = async () => {
+        if (isCreatingThread) return;
+        isCreatingThread = true;
         try {
             const response = await fetch(tsfmData.threadEndpoint, {
                 method: 'POST',
@@ -116,7 +119,8 @@ document.addEventListener('DOMContentLoaded', async function () {
                     'X-WP-Nonce': tsfmData.nonce,
                 },
                 body: JSON.stringify({
-                    locale: tsfmData.locale
+                    locale: tsfmData.locale,
+                    app_id: tsfmData.popUpAppId
                 }),
             });
             const data = await response.json();
@@ -131,6 +135,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         } catch (error) {
             console.error('Error:', error);
             alert('An error occurred while creating thread.');
+        } finally {
+            isCreatingThread = false;
         }
     }
 

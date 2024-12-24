@@ -13,7 +13,7 @@ class ManageApps extends BasePage
 		parent::__construct(
 			'Manage Apps',                // Page Title
 			'Manage Apps',                // Menu Title
-			'manage_options',                // Capability
+			'edit_posts',                // Capability
 			'tsfm_manage_apps',           // Menu Slug
 			'tsfm_main_menu'                 // Parent slug (main menu)
 		);
@@ -46,6 +46,7 @@ class ManageApps extends BasePage
 			'theosummaFrontendUrl' => THEOSUMMA_FRONTEND_URL,
 			'nonce' => wp_create_nonce('wp_rest'),
 			'locale' => get_locale(),
+            'isAdministratorUser' => current_user_can('manage_options'),
 			'restBaseEndpoint' => rest_url('wp/v2'),
 			'postTypesEndpoint' => rest_url('wp/v2/types'),
 			'authEndpoint' => rest_url('tsfm/v1/auth'),

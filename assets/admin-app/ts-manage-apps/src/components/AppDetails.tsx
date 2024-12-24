@@ -19,6 +19,7 @@ interface AppDetailsProps {
 const excludedPostTypes = ['attachment', 'revision', 'nav_menu_item'];
 
 const AppDetails: React.FC<AppDetailsProps> = ({app, onDeleteApp}) => {
+    const isAdministratorUser = window.tsfmData.isAdministratorUser;
     const setInfoMessage = useSetRecoilState(infoMessageState);
     const [disabledPostTypes, setDisabledPostTypes] = useState<boolean>(true);
     const [syncInProgress, setSyncInProgress] = useState<boolean>(false);
@@ -48,6 +49,7 @@ const AppDetails: React.FC<AppDetailsProps> = ({app, onDeleteApp}) => {
 
 
         (async () => {
+            if(!isAdministratorUser) return;
             try {
                 const fetchedPostTypes = await fetchPostTypes();
                 if (fetchedPostTypes) {
@@ -85,6 +87,7 @@ const AppDetails: React.FC<AppDetailsProps> = ({app, onDeleteApp}) => {
 
     // Polling mechanism to refresh syncing status every 10 seconds if syncing is in progress
     useEffect(() => {
+        if(!isAdministratorUser) return;
         if (syncInProgress && !pollingInterval.current) {
             // Set up polling
             pollingInterval.current = setInterval(async () => {
@@ -122,6 +125,7 @@ const AppDetails: React.FC<AppDetailsProps> = ({app, onDeleteApp}) => {
     }, [syncInProgress, app.app_id, setInfoMessage]);
 
     const handleDelete = () => {
+        if(!isAdministratorUser) return;
         const confirmDeletion = window.confirm(
             'Are you sure you want to delete this app? This action cannot be undone.'
         );
@@ -131,6 +135,7 @@ const AppDetails: React.FC<AppDetailsProps> = ({app, onDeleteApp}) => {
     };
 
     const handleCheckboxChange = (slug: string) => {
+        if(!isAdministratorUser) return;
         setRelatedPostTypes(prevState => {
             const isChecked = prevState.post_types.includes(slug);
             let updatedPostTypes: string[];
@@ -148,6 +153,7 @@ const AppDetails: React.FC<AppDetailsProps> = ({app, onDeleteApp}) => {
     };
 
     const handleSyncClick = async () => {
+        if(!isAdministratorUser) return;
         if (syncInProgress) return;
         setSyncInProgress(true);
         setDisabledPostTypes(true);
@@ -239,7 +245,7 @@ const AppDetails: React.FC<AppDetailsProps> = ({app, onDeleteApp}) => {
                     </tbody>
                 </table>
                 <div className="mt-4">
-                    {app.has_posts && postTypes && Object.keys(postTypes).length > 0 && (
+                    {isAdministratorUser && app.has_posts && postTypes && Object.keys(postTypes).length > 0 && (
                         <div>
                             <h4 className="mb-2 font-semibold">
                                 Post types available for syncing with TheoSumma: (supports only syncing posts for now)
@@ -397,15 +403,20 @@ const AppDetails: React.FC<AppDetailsProps> = ({app, onDeleteApp}) => {
                     } justify-between gap-3`}
                 >
                     <div className={'flex gap-3'}>
-                        <button
-                            type="button"
-                            className="rounded-md p-2 bg-red-500 hover:bg-red-600 text-white"
-                            onClick={handleDelete}
-                        >
-                            Delete App
-                        </button>
                         {
-                            app.has_posts && (
+                            isAdministratorUser && (
+                                <button
+                                    type="button"
+                                    className="rounded-md p-2 bg-red-500 hover:bg-red-600 text-white"
+                                    onClick={handleDelete}
+                                >
+                                    Delete App
+                                </button>
+                            )
+                        }
+
+                        {
+                            isAdministratorUser && app.has_posts && (
                                 <button
                                     type="button"
                                     className="rounded-md p-2 bg-blue-500 hover:bg-blue-600 text-white"
@@ -433,28 +444,32 @@ const AppDetails: React.FC<AppDetailsProps> = ({app, onDeleteApp}) => {
                         Test App
                     </button>
                 </div>
-                <div
-                    className={`w-full mt-4 ${
-                        !disabledPostTypes ? 'flex' : 'hidden'
-                    } justify-end gap-3`}
-                >
-                    <button
-                        type="button"
-                        className="rounded-md p-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-500 text-white"
-                        disabled={syncInProgress}
-                        onClick={() => setDisabledPostTypes(!disabledPostTypes)}
-                    >
-                        Cancel Syncing Process
-                    </button>
-                    <button
-                        type="button"
-                        className="rounded-md p-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-500 text-white"
-                        disabled={syncInProgress}
-                        onClick={handleSyncClick}
-                    >
-                        Start Syncing Process
-                    </button>
-                </div>
+                {
+                    isAdministratorUser && app.has_posts && (
+                        <div
+                            className={`w-full mt-4 ${
+                                !disabledPostTypes ? 'flex' : 'hidden'
+                            } justify-end gap-3`}
+                        >
+                            <button
+                                type="button"
+                                className="rounded-md p-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-500 text-white"
+                                disabled={syncInProgress}
+                                onClick={() => setDisabledPostTypes(!disabledPostTypes)}
+                            >
+                                Cancel Syncing Process
+                            </button>
+                            <button
+                                type="button"
+                                className="rounded-md p-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-500 text-white"
+                                disabled={syncInProgress}
+                                onClick={handleSyncClick}
+                            >
+                                Start Syncing Process
+                            </button>
+                        </div>
+                    )
+                }
             </div>
             {isTestingApp &&
                 <TestApp

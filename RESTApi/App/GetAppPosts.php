@@ -138,5 +138,8 @@ class GetAppPosts extends BaseAPI
 		return true;
 	}
 
-
+	public function allowed_capability(): string
+	{
+		return 'edit_posts';
+	}
 }

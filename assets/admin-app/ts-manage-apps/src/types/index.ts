@@ -13,6 +13,7 @@ export interface TsfmData {
     theosummaFrontendUrl: string;
     nonce: string;
     locale: string;
+    isAdministratorUser: boolean;
     restBaseEndpoint: string;
     postTypesEndpoint: string;
     authEndpoint: string;

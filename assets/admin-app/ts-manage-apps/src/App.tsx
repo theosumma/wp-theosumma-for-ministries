@@ -13,6 +13,7 @@ import {infoMessageState} from "./recoil/atoms.ts";
 import {useSetRecoilState} from "recoil";
 
 const App: React.FC = () => {
+    const isAdministratorUser = window.tsfmData.isAdministratorUser;
     const [apps, setApps] = useState<AppData[]>([]);
     const [selectedApp, setSelectedApp] = useState<AppData | null>(null);
     const [showNewAppForm, setShowNewAppForm] = useState<boolean>(false);
@@ -33,6 +34,7 @@ const App: React.FC = () => {
     }, [setInfoMessage]);
 
     const handleCreateApp = async (appId: string) => {
+        if(!isAdministratorUser) return;
         setInfoMessage({ message: 'Creating app...', type: 'info' });
 
         const { appData, error } = await createApp(appId);
@@ -49,6 +51,7 @@ const App: React.FC = () => {
     };
 
     const handleDeleteApp = async (appId: string) => {
+        if(!isAdministratorUser) return;
         const confirmDeletion = window.confirm(
             'Are you sure you want to delete this app? This action cannot be undone.'
         );
@@ -90,12 +93,16 @@ const App: React.FC = () => {
             <div className={'flex flex-col'}>
                 <div className={'flex justify-between items-end p-2 bg-white rounded-t-md'} style={{minHeight: '5vh'}}>
                     <h2 className="text-2xl font-bold">TheoSumma Apps Management</h2>
-                    <button
-                        className="rounded-md p-2 bg-primary hover:bg-primary-dark text-white h-full"
-                        onClick={handleShowNewAppForm}
-                    >
-                        Create New App
-                    </button>
+                    {
+                        isAdministratorUser && (
+                            <button
+                                className="rounded-md p-2 bg-primary hover:bg-primary-dark text-white h-full"
+                                onClick={handleShowNewAppForm}
+                            >
+                                Create New App
+                            </button>
+                        )
+                    }
                 </div>
                 <div style={{height: '77vh'}} className={'overflow-y-auto mt-2 bg-white rounded-b-md p-2'}>
                     <div className="flex h-full">

@@ -146,11 +146,16 @@ abstract class BaseAPI
 			return false;
 		}
 
-		if (!current_user_can('manage_options') && $this->is_admin_route()) {
+		if (!current_user_can($this->allowed_capability()) && $this->is_admin_route()) {
 			return false;
 		}
 
 		return true;
+	}
+
+	public function allowed_capability(): string
+	{
+		return 'manage_options';
 	}
 
 	/**

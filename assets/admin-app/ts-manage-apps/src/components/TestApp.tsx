@@ -149,6 +149,11 @@ const TestApp: React.FC<TestAppProps> = ({app, isVisible, toggleVisibility, rela
         setIframeSrcUrl(`${theosummaFrontendUrl}threads/${currentThreadId}?token=${currentToken}`)
     }
 
+    const checkThreadStatus = async (currentThreadId: string, currentToken: string) => {
+        // TODO: Implement thread status check
+        console.log('Checking thread status:', currentThreadId, currentToken);
+    }
+
     /**
      * Initialize token and thread on component mount
      */
@@ -184,6 +189,7 @@ const TestApp: React.FC<TestAppProps> = ({app, isVisible, toggleVisibility, rela
                 setIframeSrc(newThreadId, currentToken);
             }
         } else if (currentToken && currentThreadId) {
+            await checkThreadStatus(currentThreadId, currentToken);
             setIframeSrc(currentThreadId, currentToken);
         }
 
@@ -238,6 +244,7 @@ const TestApp: React.FC<TestAppProps> = ({app, isVisible, toggleVisibility, rela
             if(post_id_value){
                 setSelectedPost(pastSelectedPost)
             }
+            await checkThreadStatus(newThreadId, currentToken);
             setIframeSrc(newThreadId, currentToken);
         }
 
@@ -288,13 +295,15 @@ const TestApp: React.FC<TestAppProps> = ({app, isVisible, toggleVisibility, rela
         }
     }
 
-    const handleSelectPost = (post: PostTypePost) => {
+    const handleSelectPost = async (post: PostTypePost) => {
         setSelectedPost(post);
         if (app.has_posts) {
             const appsThreads = getAppsThreadsLocalStorage();
             if (appsThreads[app.ID] && typeof appsThreads[app.ID] === 'object') {
                 if (appsThreads[app.ID][post.post_id] && token) {
-                    setIframeSrc(appsThreads[app.ID][post.post_id], token);
+                    const threadId = appsThreads[app.ID][post.post_id];
+                    await checkThreadStatus(threadId, token);
+                    setIframeSrc(threadId, token);
                     setInfoMessage({
                         message: `There is already a chat for this post, continue chatting.. `,
                         type: 'info',

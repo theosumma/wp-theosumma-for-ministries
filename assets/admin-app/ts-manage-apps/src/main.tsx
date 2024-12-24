@@ -10,6 +10,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             <RecoilRoot>
                 <App/>
             </RecoilRoot>
-        </StrictMode>,
+        </StrictMode>
     )
 });
