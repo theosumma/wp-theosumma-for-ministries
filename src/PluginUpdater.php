@@ -1,4 +1,5 @@
 <?php
+
 namespace TSFM;
 
 use WP_Error;
@@ -7,11 +8,11 @@ class PluginUpdater {
 	private const GITHUB_REPO = 'https://api.github.com/repos/theosumma/wp-theosumma-for-ministries/releases/latest';
 	private const PLUGIN_SLUG = 'theosumma-for-ministries';
 	private const PLUGIN_FILE = 'wp-theosumma-for-ministries/wp-theosumma-for-ministries.php';
-	private const TRANSIENT_NAME = 'tsfm_plugin_update';
 
 	public function __construct() {
 		add_filter('pre_set_site_transient_update_plugins', [$this, 'check_for_updates']);
 		add_filter('plugins_api', [$this, 'plugin_info'], 10, 3);
+		add_filter('upgrader_post_install', [$this, 'tsfm_plugin_upgrader_post_install'], 10, 3);
 	}
 
 	public function check_for_updates($transient) {
@@ -45,10 +46,7 @@ class PluginUpdater {
 		$current_version = $plugin_data['Version'];
 
 		if ( version_compare( $new_version, $current_version, '>' ) ) {
-			$package = '';
-			if ( ! empty( $data->assets ) && isset( $data->assets[0]->browser_download_url ) ) {
-				$package = $data->assets[0]->browser_download_url;
-			}
+			$package = $data->zipball_url ?? ''; // Using GitHub's automatic zipball URL
 
 			$transient->response[self::PLUGIN_FILE] = (object) [
 				'slug'        => self::PLUGIN_SLUG,
@@ -82,10 +80,7 @@ class PluginUpdater {
 			return $res;
 		}
 
-		$package = '';
-		if ( ! empty( $data->assets ) && isset( $data->assets[0]->browser_download_url ) ) {
-			$package = $data->assets[0]->browser_download_url;
-		}
+		$package = $data->zipball_url ?? '';
 
 		return (object) [
 			'name'         => 'TheoSumma For Ministries',
@@ -100,5 +95,23 @@ class PluginUpdater {
 				'description' => $data->body ?? 'TheoSumma plugin for WordPress.',
 			],
 		];
+	}
+
+	public function tsfm_plugin_upgrader_post_install($response, $hook_extra, $result) {
+		// Check if this update is for our plugin
+		if ( ! empty($hook_extra['plugin']) && strpos($hook_extra['plugin'], 'wp-theosumma-for-ministries.php') !== false ) {
+			// Set the correct destination folder (adjust if necessary)
+			$correct_destination = WP_PLUGIN_DIR . '/wp-theosumma-for-ministries';
+
+			// If the folder name does not match, rename it
+			if ( $result['destination'] !== $correct_destination ) {
+				// Rename the folder
+				rename($result['destination'], $correct_destination);
+				// Update the destination in the response
+				$result['destination'] = $correct_destination;
+			}
+		}
+
+		return $result;
 	}
 }
