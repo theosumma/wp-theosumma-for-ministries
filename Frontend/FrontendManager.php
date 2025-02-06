@@ -53,7 +53,7 @@ class FrontendManager
             <div class="modal-background">
                 <div class="modal d-flex flex-column" style="height: 90%">
                     <div class="tsfm-chat-header" style="height: 7%">
-                        <span><?php bloginfo('title'); ?></span>
+                        <span><?php bloginfo('title'); ?> - AI Chat Bot</span>
                         <div id="tsfm-action-btns-wrapper">
                             <button id="tsfm-new-chat">New Chat</button>
                             <button id="tsfm-close-chat">

@@ -2,3 +2,4 @@
 .DS_Store
 assets/admin-app/ts-manage-apps/node_modules
 assets/admin-app/ts-manage-apps/.idea
+./node_modules

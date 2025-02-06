@@ -1,0 +1,11 @@
+{
+	"private": true,
+	"scripts": {
+		"dev": "npm run development",
+		"watch:sync": "node browsersync.js",
+		"prod": "npm run production"
+	},
+	"devDependencies": {
+		"browser-sync": "^3.0.3"
+	}
+}

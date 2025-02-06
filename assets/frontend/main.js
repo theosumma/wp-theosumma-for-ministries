@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Set iframe src to start loading
         chatIframe.setAttribute(
             'src',
-            `${tsfmData.theosummaFrontendUrl}threads/${finalThreadId}?token=${token}`
+            `${tsfmData.theosummaFrontendUrl}threads/${finalThreadId}?token=${token}&locale=${tsfmData.locale}`
         );
     };
 

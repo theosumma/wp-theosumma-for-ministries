@@ -52,7 +52,7 @@ class ThreadManager
 				'Content-Type' => 'application/json',
 				Setup::API_KEY_HEADER => $api_key, // Include API key as header
 			],
-			'timeout' => 10,
+			'timeout' => 25,
 			'body' => json_encode($body),
 		]);
 
