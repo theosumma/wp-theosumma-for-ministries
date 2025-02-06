@@ -5,6 +5,9 @@ Plugin URI: https://theosumma.com/
 Description: TheoSumma For Ministries plugin integrates the TheoSumma platform with WordPress.
 Version: 1.11
 Author: Bisharah Estephan
+Requires at least: 4.9
+Tested up to: 6.7
+Requires PHP: 7.4
 Author URI: https://boshdev.com/
 */
 

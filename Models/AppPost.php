@@ -52,7 +52,7 @@ class AppPost
 	 * @param int $post_id
 	 * @return int|bool The number of rows inserted or false on failure.
 	 */
-	public static function create_relation(string $app_id, int $post_id): int|bool
+	public static function create_relation(string $app_id, int $post_id)
 	{
 		global $wpdb;
 		$table_name = self::get_table_name();
@@ -131,7 +131,7 @@ class AppPost
 	 * @param int $post_id
 	 * @return int|bool The number of rows updated or false on failure.
 	 */
-	public static function sync_relation(string $app_id, int $post_id): int|bool
+	public static function sync_relation(string $app_id, int $post_id)
 	{
 		global $wpdb;
 		$table_name = self::get_table_name();

@@ -116,16 +116,16 @@ class Create extends BaseAPI
 		], 200);
 	}
 
-	private function create_app($app_data): int|WP_REST_Response
+	private function create_app($app_data)
 	{
 		$new_app_id = App::create_app(
-			app_id: $app_data['app_id'],
-			title: $app_data['title'],
-			description: $app_data['description'] ?? '',
-			has_posts: $app_data['has_posts'] ?? false,
-			accept_documents: $app_data['accept_documents'] ?? false,
-			accept_welcome_message: $app_data['accept_welcome_message'] ?? false,
-			welcome_message_content: $app_data['welcome_message_content'] ?? ''
+			$app_data['app_id'],
+			$app_data['title'],
+			$app_data['description'] ?? '',
+			$app_data['has_posts'] ?? false,
+			$app_data['accept_documents'] ?? false,
+			$app_data['accept_welcome_message'] ?? false,
+			$app_data['welcome_message_content'] ?? ''
 		);
 
 		if ($new_app_id instanceof \WP_Error) {

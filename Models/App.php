@@ -65,7 +65,7 @@ class App
 		bool    $accept_documents = false,
 		bool    $accept_welcome_message = false,
 		?string $welcome_message_content = null
-	): int|\WP_Error
+	): int
 	{
 		global $wpdb;
 		$table_name = self::get_table_name();
@@ -163,7 +163,7 @@ class App
 	 * @param int $id
 	 * @return void
 	 */
-	public static function delete_app(int $id): int|bool
+	public static function delete_app(int $id)
 	{
 		global $wpdb;
 		$table_name = self::get_table_name();
@@ -179,7 +179,7 @@ class App
 	 * @param int $id
 	 * @return void
 	 */
-	public static function delete_app_by_app_id(string $id): int|bool
+	public static function delete_app_by_app_id(string $id)
 	{
 		global $wpdb;
 		$table_name = self::get_table_name();

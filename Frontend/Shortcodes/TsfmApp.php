@@ -12,7 +12,7 @@ class TsfmApp
 {
 	public static $atts = [];
 
-	public static function load($atts): bool|string
+	public static function load($atts)
 	{
 		if (is_admin() || (defined('DOING_AJAX') && DOING_AJAX) || SettingsManager::isDevelopmentMode()) {
 			return ''; // if admin dashboard or AJAX
@@ -57,7 +57,7 @@ class TsfmApp
 		]);
 	}
 
-	public static function render(): bool|string
+	public static function render()
 	{
 		// You can process $atts if needed
 		ob_start();

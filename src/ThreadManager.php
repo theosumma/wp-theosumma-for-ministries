@@ -19,7 +19,7 @@ class ThreadManager
 	 * @param int $post_id
 	 * @return string|WP_Error The thread information if the request was successful, or null on failure.
 	 */
-	public static function create_thread(string $app_id, string $locale = 'en', int $post_id = 0): string|WP_Error
+	public static function create_thread(string $app_id, string $locale = 'en', int $post_id = 0)
 	{
 		$api_key = SettingsManager::getApiKey();
 

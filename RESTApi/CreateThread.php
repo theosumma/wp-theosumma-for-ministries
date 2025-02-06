@@ -70,7 +70,7 @@ class CreateThread extends BaseAPI
 			$post_id = 0;
 		}
 
-		$create_thread = ThreadManager::create_thread(app_id: $app->app_id, locale: $locale, post_id: $post_id);
+		$create_thread = ThreadManager::create_thread($app->app_id, $locale, $post_id);
 		if ($create_thread instanceof WP_Error) {
 			return $this->send_error_response($create_thread->get_error_message(), $create_thread->get_error_code(), $create_thread->get_error_data());
 		}

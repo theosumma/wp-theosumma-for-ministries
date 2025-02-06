@@ -165,7 +165,7 @@ abstract class BaseAPI
 	 * @param int $status HTTP status code.
 	 * @return WP_REST_Response
 	 */
-	protected function send_error_response(string $message, mixed $status = 400, mixed $data = null): WP_REST_Response
+	protected function send_error_response(string $message, int $status = 400, $data = null): WP_REST_Response
 	{
 		if(!is_int($status)) {
 			$status = 500;

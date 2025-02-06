@@ -119,7 +119,7 @@ class GetAppPosts extends BaseAPI
 			return $this->send_error_response('APP does not exists', 400);
 		}
 
-		$data = AppPost::get_joined_synced_posts_by_app_id_and_post_type(app_id: $app_id, post_type: $post_type);
+		$data = AppPost::get_joined_synced_posts_by_app_id_and_post_type($app_id, $post_type);
 
 		return new WP_REST_Response([
 			'success' => true,
