@@ -32,7 +32,7 @@ export const getPostsCount = async (postType: string): Promise<number> => {
             return 0;
         }
     } catch (error) {
-        console.error('Error fetching apps:', error);
+        console.error('Error fetching agents:', error);
         return 0;
     }
 };

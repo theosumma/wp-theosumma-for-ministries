@@ -200,14 +200,23 @@ class App
 		global $wpdb;
 		$table_name = self::get_table_name();
 
+		// Base query
 		$query = "SELECT * FROM $table_name WHERE 1=1";
 		$query_params = [];
 
-		foreach ($filters as $column => $value) {
-			$query .= " AND $column = %s";
-			$query_params[] = $value;
+		if (!empty($filters)) {
+			foreach ($filters as $column => $value) {
+				// Sanitize column names
+				$column = esc_sql($column);
+				$query .= " AND {$column} = %s";
+				$query_params[] = $value;
+			}
+
+			// Prepare only if we have parameters
+			$query = $wpdb->prepare($query, ...$query_params);
 		}
 
-		return $wpdb->get_results($wpdb->prepare($query, $query_params));
+		return $wpdb->get_results($query);
 	}
+
 }

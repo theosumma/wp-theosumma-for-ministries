@@ -31,11 +31,11 @@ class Setup
 		],
 		'check_app_exists' => [
 			'method' => 'GET',
-			'path' => '/apps/{app_id}',
+			'path' => '/agents/{app_id}',
 		],
 		'create_app' => [
 			'method' => 'POST',
-			'path' => '/apps/{app_id}',
+			'path' => '/agents/{app_id}',
 		]
 	];
 

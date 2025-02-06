@@ -3,7 +3,7 @@
 Plugin Name: TheoSumma For Ministries
 Plugin URI: https://theosumma.com/
 Description: TheoSumma For Ministries plugin integrates the TheoSumma platform with WordPress.
-Version: 1.0
+Version: 1.1
 Author: Bisharah Estephan
 Author URI: https://boshdev.com/
 */
@@ -47,4 +47,7 @@ spl_autoload_register(function ($class) {
 // Initialize the plugin
 \TSFM\Init::get_instance();
 register_activation_hook(__FILE__, [\TSFM\Init::class, 'activate']);
+if ( is_admin() ) {
+	new \TSFM\PluginUpdater();
+}
 
