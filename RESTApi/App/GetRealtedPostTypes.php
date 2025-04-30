@@ -5,8 +5,6 @@ namespace TSFM\RESTApi\App;
 use TSFM\Models\App;
 use TSFM\Models\AppPost;
 use TSFM\RESTApi\BaseAPI;
-use TSFM\RESTApi\Setup;
-use TSFM\SettingsManager;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;

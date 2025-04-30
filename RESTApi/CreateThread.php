@@ -52,8 +52,8 @@ class CreateThread extends BaseAPI
 		// check if app_id is uuid or numerical
 		if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $app_id)) {
 			$app = App::get_app_by_id($app_id);
-        } elseif (is_numeric($app_id)) {
-			$app = App::get_app((string) $app_id);
+		} elseif (is_numeric($app_id)) {
+			$app = App::get_app((string)$app_id);
 		} else {
 			return $this->send_error_response('Invalid App ID');
 		}
@@ -72,7 +72,7 @@ class CreateThread extends BaseAPI
 
 		$create_thread = ThreadManager::create_thread($app->app_id, $locale, $post_id);
 		if ($create_thread instanceof WP_Error) {
-			return $this->send_error_response($create_thread->get_error_message(), $create_thread->get_error_code(), $create_thread->get_error_data());
+			return $this->send_error_response($create_thread->get_error_message(), ($create_thread->get_error_code() ? intval($create_thread->get_error_code()) : 500), $create_thread->get_error_data());
 		}
 
 		return new WP_REST_Response([
