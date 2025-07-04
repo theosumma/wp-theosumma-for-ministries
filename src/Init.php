@@ -61,7 +61,7 @@ class Init
 			// Set default constants
 			define('TSFM_ENV', 'production');
 			define('THEOSUMMA_FRONTEND_URL', 'https://wp.theosumma.com/wp-chat-widget/');
-			define('THEOSUMMA_API_URL', 'https://service-dev-api.theosumma.com/api/v1/wp');
+			define('THEOSUMMA_API_URL', 'https://ministries.theosumma.com/api/v1/wp');
 		}
 	}
 
